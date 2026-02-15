@@ -1,0 +1,92 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-300"> <div>
+    <div class="glitch-form-wrapper">
+      
+      <form (ngSubmit)="onLogin()" class="glitch-card bg-white rounded-lg shadow-lg p-10 w-[620px]">
+        
+        <div class="card-header mb-10"> <div class="card-title text-xl">
+            
+            <img 
+                ngSrc="/header-logo-CYWG0uWV.svg" 
+                width="120" 
+                height="32" 
+                alt="Logo" 
+                priority 
+                class="mb-2 mr-10">
+            <span class="font-bold text-2xl tracking-wider">有愛旅行社登入</span>
+          </div>
+          <div class="card-dots"><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="card-body space-y-6 mb-6 "> <div class="form-group">
+            <input
+              type="text"
+              id="username"
+              name="email"
+              class="mb-6"
+              [(ngModel)]="email" 
+              required
+              placeholder=""
+              class="w-full" 
+              [disabled]="isLoading"
+            />
+            <label for="username" class="form-label" data-text="帳號">帳號</label>
+          </div>
+
+          <div class="form-group">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="password"
+              name="password"
+              [(ngModel)]="password"
+              required
+              placeholder=""
+              class="w-full"
+              [disabled]="isLoading"
+            />
+            <label for="password" class="form-label" data-text="密碼">密碼</label>
+
+            <button
+                type="button" 
+                (click)="togglePassword()"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors focus:outline-none z-20 cursor-pointer"
+                tabindex="-1"> 
+                @if (showPassword) {
+                  <svg class="stroke-cyan-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                } @else {
+                  <svg class="stroke-cyan-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                }
+              </button>
+          </div>
+
+          @if (errorMessage) {
+            <div class="text-red-500 text-sm font-bold text-center tracking-wide animate-pulse">
+              ⚠️ {{ errorMessage }}
+            </div>
+          }
+
+          <button 
+            type="submit" 
+            class="submit-btn w-full mt-4" 
+            data-text="登入"
+            [disabled]="isLoading">
+            
+            <span class="btn-text">
+              @if (isLoading) {
+                登入中...
+              } @else {
+                登入
+              }
+            </span>
+          </button>
+          
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

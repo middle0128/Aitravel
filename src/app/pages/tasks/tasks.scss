@@ -1,0 +1,57 @@
+/* 全螢幕遮罩背景 */
+.loading-overlay {
+  position: fixed;      /* 固定在螢幕上，不隨捲軸移動 */
+  top: 0;
+  left: 0;
+  width: 100vw;         /* 佔滿寬度 */
+  height: 100vh;        /* 佔滿高度 */
+  background-color: rgba(0, 0, 0, 0.75); /* 深色半透明背景 */
+  z-index: 9999;        /* 確保蓋在所有東西上面 */
+  display: flex;        /* 彈性盒子佈局 */
+  flex-direction: column; /* 垂直排列 */
+  justify-content: center; /* 垂直置中 */
+  align-items: center;     /* 水平置中 */
+  backdrop-filter: blur(5px); /* (選用) 背景模糊特效 */
+}
+
+/* 轉圈圈動畫 */
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #f3f3f3; /* 淺灰底色 */
+  border-top: 6px solid #3498db; /* 藍色轉動條 */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+/* 文字樣式 */
+.loading-text {
+  color: white;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* (選用) 美化上傳按鈕 */
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0; /* 把真正的 input 藏起來 */
+  cursor: pointer;
+}

@@ -1,0 +1,154 @@
+<div class="container mx-auto p-6 flex flex-col min-h-screen">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-slate-800 tracking-wide">團體訂單管理</h2>
+    <button (click)="gotoordernew()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2">
+      <span>+</span> 新增訂單
+    </button>
+  </div>
+
+  <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 space-y-4">
+    
+    <div class="flex gap-2">
+      <div class="relative flex-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (keyup.enter)="onSearch()"
+          placeholder="搜尋團名、更新人員或團號...(可模糊搜尋)" 
+          class="w-full pl-10 pr-4 py-2 border border-slate-60 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+        >
+      </div>
+      <button (click)="onSearch()" class="px-6 py-2 bg-slate-800 text-white rounded-lg font-bold hover:bg-slate-700 transition">
+        搜尋
+      </button>
+    </div>
+
+    <div class="flex border-b border-slate-200">
+      @for (tab of tabs; track tab.id) {
+        <button 
+          (click)="setFilter(tab.id)"
+          class="px-4 py-2 text-sm font-medium transition-all border-b-2 relative top-[1px]"
+          [class.border-blue-600]="statusFilter === tab.id"
+          [class.text-blue-600]="statusFilter === tab.id"
+          [class.border-transparent]="statusFilter !== tab.id"
+          [class.text-slate-500]="statusFilter !== tab.id"
+          [class.hover:text-slate-700]="statusFilter !== tab.id">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span class="ml-3 text-slate-500">正在載入訂單資料...</span>
+    </div>
+  } @else {
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      
+      @for (order of orders; track order.id) {
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-300 transition duration-200 flex flex-col justify-between h-auto">
+          
+          <div class="p-5 flex flex-col flex-1">
+            <div class="flex justify-between items-start mb-3">
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full"
+                [class.bg-blue-100]="order.status === 'Planning'"
+                [class.text-blue-700]="order.status === 'Planning'"
+                [class.bg-green-100]="order.status === 'Confirmed'"
+                [class.text-green-700]="order.status === 'Confirmed'">
+                @if(order.status == 'Confirmed'){
+                    <span class="text-xs text-green-600 font-medium">已完成</span>
+                }@else {
+                  <span class="text-xs text-blue-600 font-medium">尚未完成</span>
+                }
+
+              </span>
+              
+              <div class="text-right">
+                <div class="text-xs text-slate-400 font-medium">最後更新</div>
+                  <div class="text-xs font-bold text-slate-600">
+                {{ order.updated_at ? (order.updated_at | date:'MM/dd HH:mm') : '無紀錄' }}
+                </div>
+              </div>
+              <span class="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded text-center">
+                {{ order.start_date }} <br> ↓ <br> {{ order.end_date }}
+              </span>
+            </div>
+            
+            <h3 class="text-lg font-bold text-slate-800 mb-1 line-clamp-2 min-h-[3.5rem]">
+              {{ order.client_name }}
+            </h3>
+
+            <h3 class="text-lg font-bold text-slate-500 mb-1 line-clamp-2">
+              團號:{{ order.id }}
+            </h3>
+
+          <div class="flex flex-wrap gap-2 mt-2"> 
+
+              
+
+                @if (order.is_priority) {
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-600 border border-red-200">
+                    🔥 急件/優先
+                  </span>
+                }
+
+                @if (order.has_issue) {
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-600 border border-yellow-200">
+                    ⚠️ 狀況/問題
+                  </span>
+                }
+
+              </div>
+                <div class="flex items-center justify-between mt-3 mt-auto">
+    
+                    <div class="flex items-center text-sm text-slate-500">
+                      <span class="mr-2">👤</span>
+                      <span>{{ order.main_contact || '未指定聯絡人' }}</span>
+                    </div>
+
+                    <div class="flex justify-end">
+                      <button 
+                        (click)="deleteOrder(order, $event)" 
+                        class="flex items-center justify-center w-10 h-10 rounded border border-slate-200 bg-white text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition shadow-sm"
+                        title="刪除此訂單">
+                        <mat-icon fontIcon="delete" class="scale-90"></mat-icon>
+                      </button>
+                    </div>
+                  </div>
+          </div>
+
+          <div class="px-5 py-4 bg-slate-50 border-t border-slate-100 rounded-b-xl">
+            
+
+            <button (click)="goToTasks(order.id)" class="w-full py-2 px-4 rounded border border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 font-medium transition text-sm">
+              管理任務細節
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="col-span-full flex flex-col items-center justify-center py-16 bg-slate-50 rounded-lg border border-dashed border-slate-300 text-slate-400">
+          <p class="text-lg font-medium">目前沒有任何訂單</p>
+          <p class="text-sm mt-1">點擊右上方按鈕新增第一筆資料</p>
+        </div>
+      }
+
+    </div>
+
+    <mat-paginator 
+      class="rounded-lg shadow-sm border border-slate-200 mt-auto"
+      [length]="totalCount"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[5, 10, 20]"
+      [pageIndex]="pageIndex"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+      aria-label="Select page">
+    </mat-paginator>
+  }
+</div>

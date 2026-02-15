@@ -1,0 +1,16 @@
+/* 修改動畫：只動 Y 軸，不要動 X 軸 */
+@keyframes slideInDown {
+  0% {
+    transform: translateY(-100%); /* 從上面看不見的地方開始 */
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);     /* 回到原位 */
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  /* 使用 forwards 確保動畫結束後停在原地 */
+  animation: slideInDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}

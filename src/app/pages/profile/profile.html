@@ -1,0 +1,75 @@
+<div class="max-w-2xl mx-auto p-6">
+  
+  <div class="mb-8 border-b border-slate-200 pb-4">
+    <h1 class="text-2xl font-bold text-slate-800">個人資料設定</h1>
+    <p class="text-slate-500 mt-1">管理您的帳戶名稱與登入密碼</p>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    
+    <form (ngSubmit)="onSave()" class="p-6 space-y-6">
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">顯示名稱 (姓名)</label>
+        <input 
+          type="text" 
+          [(ngModel)]="displayName" 
+          name="displayName"
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          placeholder="例如：王小明">
+        <p class="text-xs text-slate-400 mt-1">這將會顯示在系統右上角。</p>
+      </div>
+
+      <hr class="border-slate-100 my-6">
+
+      <div>
+        <h3 class="text-md font-bold text-slate-800 mb-4">變更密碼</h3>
+        <p class="text-xs text-amber-600 bg-amber-50 p-2 rounded mb-4 inline-block">
+          💡 如果不需要修改密碼，請將下方欄位留空。
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">新密碼</label>
+            <input 
+              type="password" 
+              [(ngModel)]="newPassword" 
+              name="newPassword"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              placeholder="輸入新密碼">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">確認新密碼</label>
+            <input 
+              type="password" 
+              [(ngModel)]="confirmPassword" 
+              name="confirmPassword"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              placeholder="再次輸入新密碼">
+          </div>
+        </div>
+      </div>
+
+      @if (message) {
+        <div class="p-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2">
+          ✅ {{ message }}
+        </div>
+      }
+      @if (errorMessage) {
+        <div class="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium flex items-center gap-2">
+          ⚠️ {{ errorMessage }}
+        </div>
+      }
+
+      <div class="flex justify-end pt-4">
+        <button 
+          type="submit" 
+          [disabled]="isLoading"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow transition transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ isLoading ? '儲存中...' : '儲存變更' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

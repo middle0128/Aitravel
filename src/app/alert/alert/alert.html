@@ -1,0 +1,32 @@
+@if (alert) {
+  <div class="fixed inset-0 z-[9999] flex items-start justify-center pt-10 pointer-events-none">
+    
+    <div class="pointer-events-auto min-w-[320px] max-w-[90%] animate-slide-in
+                flex items-center p-4 rounded-lg shadow-2xl border-l-4 bg-white"
+         
+         [class.border-green-500]="alert.type === 'success'"
+         [class.text-green-700]="alert.type === 'success'"
+         
+         [class.border-red-500]="alert.type === 'error'"
+         [class.text-red-700]="alert.type === 'error'"
+         
+         [class.border-blue-500]="alert.type === 'info'"
+         [class.text-blue-700]="alert.type === 'info'">
+
+      <!-- <div class="flex-shrink-0 mr-3 text-xl">
+        @if(alert.type === 'success') { ✅ }
+        @if(alert.type === 'error') { ⛔ }
+        @if(alert.type === 'info') { ℹ️ }
+      </div> -->
+
+      <div class="font-bold text-sm flex-1 tracking-wide">
+        {{ alert.message }}
+      </div>
+
+      <button (click)="close()" class="ml-4 text-lg font-bold opacity-50 hover:opacity-100 hover:scale-110 transition cursor-pointer">
+        ✕
+      </button>
+
+    </div>
+  </div>
+}

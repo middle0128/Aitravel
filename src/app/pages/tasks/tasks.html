@@ -1,0 +1,378 @@
+<div class="container mx-auto p-6 max-w-7xl"> <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-100 sticky top-4 z-20">
+    <div class="flex items-center gap-4">
+      <button (click)="goBackcheck()" class="text-slate-400 hover:text-slate-600 transition flex items-center gap-1 text-sm font-bold">
+        ← 返回
+      </button>
+      <h2 class="text-xl font-bold text-slate-700 border-l border-slate-10 pl-4">
+        任務清單
+      </h2>
+      <span class="text-xs text-slate-600 pl-4 mt-1">
+          最後更新：{{ lastUpdatedTime ? (lastUpdatedTime | date:'yyyy/MM/dd HH:mm') : '無紀錄' }}
+        </span>
+        <h2 class="text-xl font-bold text-slate-700 border-l border-slate-10 pl-4">
+            團號:{{orderId}}
+      </h2>
+    </div>
+
+    <div class="flex items-center gap-3">
+      @if(isEditMode){
+        <button 
+  (click)="showImportModal = true"
+  class="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-md transition ml-2">
+  <mat-icon fontIcon="auto_awesome"></mat-icon> <span>AI 智慧匯入</span>
+</button>
+
+@if (showImportModal) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+    
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-purple-200">
+      
+      <div class="bg-purple-50 p-4 border-b border-purple-100 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-purple-800 flex items-center gap-2">
+          <mat-icon fontIcon="auto_awesome" class="scale-90"></mat-icon>
+          智慧行程匯入
+        </h3>
+        <button (click)="showImportModal = false" class="text-slate-400 hover:text-red-500">
+          <mat-icon fontIcon="close"></mat-icon>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        
+        <p class="text-sm text-slate-500">
+          你可以貼上 JSON 格式，或是上傳截圖讓 AI 幫你整理。
+        </p>
+
+        <div class="flex gap-2 mb-2">
+            <label class="cursor-pointer px-3 py-3 bg-slate-100 hover:bg-slate-200 rounded text-sm text-slate-600 flex items-center gap-1 transition">
+                <input type="file" (change)="onFileSelected($event)" class="hidden" accept="image/*">
+                🤖 上傳截圖AI辨識
+            </label>
+        </div>
+
+        <textarea 
+          [(ngModel)]="importContent"
+          rows="10" 
+          class="w-full p-4 border border-slate-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none"
+          placeholder='上傳截圖或是png照片或是直接貼上 JSON Array:
+            [{
+              "day": 1,
+              "time": "10:00",
+              "item_name": "行程名稱",
+              "remarks":"備註內容",
+              "contact_phone":"電話"
+              }]
+            可以接此段對話給AI叫他轉換'></textarea>
+
+      </div>
+      @if (isProcessingAi) {
+  <div class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">
+      <p>正在上傳給AI辨識...</p>
+      <p>請稍候，不要關閉視窗</p>
+      <p>需約30秒左右</p>
+    </div>
+  </div>
+}
+      <div class="bg-slate-50 p-4 border-t border-slate-100 flex justify-end gap-3">
+        
+        <!-- <button 
+          (click)="callAiParser()"
+          [disabled]="isProcessingAi || !importContent"
+          class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:shadow-lg disabled:opacity-50 transition flex items-center gap-2">
+          @if (isProcessingAi) {
+            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24"></svg>
+            AI 思考中...
+          } @else {
+            🤖 AI 辨識整理
+          }
+        </button> -->
+
+        <button 
+          (click)="parseJson()"
+          [disabled]="isProcessingAi || !importContent"
+          class="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition">
+          確認匯入表格
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+      }
+      @if (isEditMode && (changedTasks.length > 0 || deletedTaskIds.size > 0)) {
+        <button 
+          (click)="saveChanges()"
+          [disabled]="!canSave" 
+          class="px-4 py-2 rounded-lg font-bold text-white transition shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          [class.bg-blue-600]="!hasInvalidChanges"
+          [class.hover:bg-blue-700]="!hasInvalidChanges"
+          [class.bg-red-400]="hasInvalidChanges" 
+        >
+          @if (isSaving) {
+            <span>處理中...</span>
+          } @else if (hasInvalidChanges) {
+            <span>⚠️ 儲備註及電話其餘欄位皆為必填欄位</span>
+          } @else {
+            <span>💾 儲存 </span>
+          }
+        </button>
+      }
+
+      <button 
+        (click)="toggleEditMode()"
+        class="px-4 py-2 rounded-lg font-bold transition border flex items-center gap-2"
+        [class.bg-slate-100]="!isEditMode"
+        [class.text-slate-600]="!isEditMode"
+        [class.bg-red-50]="isEditMode"
+        [class.text-red-600]="isEditMode"
+        [class.border-red-200]="isEditMode">
+        {{ isEditMode ? '✕ 取消編輯' : '✏️ 編輯模式' }}
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="text-center py-20 text-slate-500">正在讀取任務資料...</div>
+  } @else {
+    
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden text-sm">
+      <div class="grid grid-cols-24 gap-4 p-4 bg-slate-25 border-b border-slate-200 font-bold text-slate-600 text-center items-center">
+        <div class="col-span-4 text-left pl-2">狀態</div>
+        <div class="col-span-2 ">天數@if (hasInvalidChanges) {<span class="text-red-500">*</span>}</div>
+        <div class="col-span-2">類別@if (hasInvalidChanges) {<span class="text-red-500">*</span>}</div>
+        <div class="col-span-3 text-left">任務項目@if (hasInvalidChanges) {<span class="text-red-500">*</span>}</div>
+        <div class="col-span-2">時間@if (hasInvalidChanges) {<span class="text-red-500">*</span>}</div>
+        <div class="col-span-3">電話@if (hasInvalidChanges) {<span class="text-red-500">*</span>}</div>
+        <div class="col-span-4 text-left">備註 / 問題</div>
+         <div class="col-span-2">更新人員</div>
+        <div class="col-span-2">更新時間</div>
+      </div>
+
+      @for (task of tasks; track task.id) {
+        <div class="grid grid-cols-24 gap-4 p-4 items-center border-b border-slate-100 transition duration-150 relative"
+             [class.bg-red-50]="task.is_priority && !task.is_completed" 
+             [class.bg-yellow-50]="task.has_issue && !task.is_priority && !task.is_completed"
+             [class.bg-blue-50]="isTaskDirty(task)"
+             [class.hover:bg-slate-50]="!task.is_priority && !task.has_issue">
+          
+          <div class="col-span-4 flex flex-col justify-center items-start pl-2">
+            
+            @if (isEditMode) {
+              <div class="flex flex-col gap-2 w-full">
+                
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" [(ngModel)]="task.is_completed" 
+                         class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                  <span class="text-sm font-bold text-slate-700">完成</span>
+                   @if(isEditMode){
+                        <button 
+                            (click)="deleteTask(task)"
+                            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition color-red-50"
+                            title="刪除此任務">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            </svg>
+                            </button>
+                        }
+                </div>
+                
+                <div class="flex flex-col gap-1 pl-1"> <div class="flex items-center gap-2">
+                     <mat-slide-toggle 
+                      [(ngModel)]="task.is_priority" 
+                      color="warn" 
+                      class="transform scale-75 origin-left">
+                    </mat-slide-toggle>
+                    <span class="text-xs text-slate-500 -ml-2 whitespace-nowrap">急件/優先</span>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <mat-slide-toggle 
+                      [(ngModel)]="task.has_issue" 
+                      color="primary" 
+                      class="transform scale-75 origin-left">
+                    </mat-slide-toggle>
+                    <span class="text-xs text-slate-500 -ml-2 whitespace-nowrap">狀況/問題</span>
+                  </div>
+                  
+                </div>
+              </div>
+
+            } @else {
+                
+              <div class="flex flex-col gap-1 items-start">
+                @if (!task.is_priority && !task.is_completed || !task.has_issue && !task.is_completed) {
+                 <div class="flex items-center gap-2 mb-1">
+                            @if(isEditMode){
+                    <input type="checkbox" [checked]="task.is_completed" disabled
+                           class="w-5 h-5 rounded border-gray-300 text-gray-400 cursor-not-allowed">
+                           }
+                    @if(!task.is_priority&&!task.has_issue||!task.has_issue&&task.is_completed||task.has_issue&&!task.is_completed){       
+                    <span class="text-sm font-bold text-slate-600">
+                        {{ task.is_completed ? '已完成' : '未完成' }}
+                    </span>
+                    }
+                    
+                 </div>
+                
+                 }
+                 @if(!isEditMode&&task.is_completed){
+                      <span class="text-sm font-bold text-slate-600">
+                        已完成
+                      </span>
+                    }
+                    @if(!isEditMode&&task.is_completed&&task.is_priority){
+                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full border border-red-200 font-bold whitespace-nowrap">
+                        🔥 急件
+                      </span>
+                    }
+                    @if(!isEditMode&&task.is_completed&&task.has_issue){
+                        <span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full border border-yellow-300 font-bold whitespace-nowrap">
+                        ⚠️ 狀況
+                      </span>
+                    }
+                 <div class="flex flex-wrap gap-1">
+                    @if (task.is_priority && !task.is_completed) {
+                      <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full border border-red-200 font-bold whitespace-nowrap">
+                        🔥 急件
+                      </span>
+                    }
+                    @if (task.has_issue && !task.is_completed) {
+                      <span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full border border-yellow-300 font-bold whitespace-nowrap">
+                        ⚠️ 狀況
+                      </span>
+                    }
+                 </div>
+              </div>
+            }
+          </div>
+
+          <div class="col-span-2 flex justify-center">
+            @if (isEditMode) {
+              <select [(ngModel)]="task.day_number" class="w-full border border-slate-300 rounded-md py-1.5 px-2 bg-white text-center text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                @for (d of days; track d) {
+                  <option [value]="d">{{ d }}</option>
+                }
+              </select>
+            } @else {
+              <span class="font-mono text-slate-600 bg-slate-100 rounded px-2 py-1 text-sm border border-slate-200">
+                第{{ task.day_number }}天
+              </span>
+            }
+          </div>
+
+          <div class="col-span-2 flex justify-center">
+            @if (isEditMode) {
+              <select [(ngModel)]="task.category" class="w-full border border-slate-300 rounded-md py-1.5 px-2 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
+              </select>
+            } @else {
+              <span class="inline-block text-slate-700 font-medium bg-white px-2 py-1 rounded border border-slate-200 text-sm">
+                {{ task.category }}
+              </span>
+            }
+          </div>
+
+          <div class="col-span-3">
+            @if (isEditMode) {
+              <input type="text" [(ngModel)]="task.item_name" class="w-full border border-blue-300 rounded-md py-1.5 px-3 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition shadow-sm">
+            } @else {
+              <span class="font-bold text-slate-600 block text-base"
+                 [class.text-slate-200]="task.is_completed" 
+                 [class.text-slate-400]="task.is_completed">
+                {{ task.item_name }}
+              </span>
+            }
+          </div>
+
+          <div class="col-span-2 pt-1 flex justify-center">
+            @if (isEditMode) {
+              <input type="time" [(ngModel)]="task.start_time" class="w-full border border-slate-300 rounded py-1 px-1 text-sm text-center">
+            } @else {
+              <span class="text-slate-600 font-mono text-sm">
+                {{ task.start_time ? (task.start_time | slice:0:5) : '尚未設定' }}
+              </span>
+            }
+          </div>
+
+          <div class="col-span-3 pt-1 text-left">
+            @if (isEditMode) {
+              <input type="text" [(ngModel)]="task.contact_phone" placeholder="電話..." class="w-full border border-slate-300 rounded py-1 px-2 text-sm">
+            } @else {
+              <div class="flex items-center justify-center gap-1 text-slate-600 text-sm">
+                @if(task.contact_phone) {
+                  
+                  <a [href]="'tel:' + task.contact_phone" >
+                    {{ task.contact_phone }}
+                  </a>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="col-span-4 ">
+            @if (isEditMode) {
+              <textarea 
+                  [(ngModel)]="task.remarks" 
+                  rows="2"
+                  placeholder="輸入備註..."
+                  class="w-full border border-slate-200 rounded-md py-1.5 px-3 text-sm placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition resize-y min-h-[40px]"
+                  [class.bg-yellow-50]="task.remarks">
+                </textarea>
+            } @else {
+             <span class="text-slate-500 block text-sm whitespace-pre-wrap  break-words "
+                    >
+                {{ task.remarks || '' }}
+              </span>
+            }
+          </div>
+
+          <div class="col-span-2 text-center text-sm text-slate-500 truncate">
+            {{ task.assignee || '-' }}
+          </div>
+
+          <div class="col-span-2 text-center text-xs text-slate-400 leading-tight">
+             @if (task.updated_at) {
+               <div class="font-mono">{{ task.updated_at | date:'MM/dd' }}</div>
+               <div class="font-mono">{{ task.updated_at | date:'HH:mm' }}</div>
+             } @else {
+               -
+             }
+          </div>
+
+        </div>
+      } @empty {
+        <div class="p-10 text-center flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+          @if (!isEditMode) {
+             <p class="text-lg">📭 此訂單目前沒有任務細節<br>點選上方編輯模式來新增項目</p>
+          }
+          @if (isEditMode) {
+             <button 
+                (click)="addTask()"
+                class="px-4 py-2 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 transition shadow-md flex items-center gap-2">
+                <span>+ 新增任務</span>
+            </button>
+                }
+                </div>
+      }
+      
+    </div>
+     @if (isEditMode) {
+            <div class="mt-20 flex justify-center">
+  <button 
+    (click)="addTask()"
+    class="group px-9 py-4 rounded-lg font-bold transition shadow-md flex items-center justify-center gap-2 animate-bounce
+           bg-transparent border-2 border-green-600 text-green-600 
+           hover:bg-green-600 hover:text-white">
+    
+    <mat-icon aria-hidden="false" fontIcon="add_circle" class="scale-110"></mat-icon>
+    
+    <span>新增任務</span>
+  </button>
+</div>
+                }
+  }
+</div>
