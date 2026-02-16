@@ -8,6 +8,11 @@ import {MatIconModule} from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { AlertService } from '../../services/alert';
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
+import { saveAs } from 'file-saver';
+
+
 
 @Component({
   selector: 'app-tasks',
@@ -28,6 +33,7 @@ export class TasksComponent implements OnInit {
 
   private http = inject(HttpClient); // 注入 Http
 
+  orderInfo: any = {};
   // 控制匯入視窗開關
   showImportModal = false;
   
@@ -214,10 +220,21 @@ export class TasksComponent implements OnInit {
     this.orderId = this.route.snapshot.paramMap.get('id');
     if (this.orderId) {
       this.loadTasks(this.orderId);
+      this.loadOrderInfo(this.orderId);
     }
     
   }
-
+  async loadOrderInfo(orderId: string) {
+  // 使用剛剛在 Service 新增的方法
+  const { data, error } = await this.supabaseService.getOrderById(orderId);
+  
+  if (data) {
+    this.orderInfo = data;
+    console.log('抓到訂單資料了:', this.orderInfo); // 測試用
+  } else {
+    console.error('抓不到訂單資料:', error);
+  }
+}
   // 讀取任務
   loadTasks(id: string) {
     this.isLoading = true;
@@ -452,5 +469,106 @@ export class TasksComponent implements OnInit {
   // 為了在 Template 中使用 Set 的屬性
   get hasUnsavedChanges() {
     return this.changedTaskIds.size > 0;
+  }
+
+  public exportToWord() {
+    // 1. 讀取 public/template.docx (注意：Angular 17+ 不用寫 assets/)
+    this.http.get('template.docx', { responseType: 'arraybuffer' })
+      .subscribe({
+        next: (content: ArrayBuffer) => {
+          // 2. 解壓縮並載入 Docxtemplater
+          const zip = new PizZip(content);
+          const doc = new Docxtemplater(zip, {
+            paragraphLoop: true,
+            linebreaks: true,
+          });
+
+          // 3. 準備資料 (呼叫下面的小幫手整理資料)
+          const templateData = {
+           client_name: this.orderInfo.client_name || '未定團名',
+            id: this.orderId,
+            start_date: this.orderInfo.start_date || '未定',
+            end_date: this.orderInfo.end_date || '未定',
+            
+            // 這裡是對應 Word 裡的 {#days} 迴圈
+            days: this.processTasksForWord(this.tasks) 
+          };
+
+          // 4. 渲染資料 (Render)
+          try {
+            doc.render(templateData);
+          } catch (error) {
+            console.error('匯出失敗:', error);
+            alert('匯出失敗，請檢查資料格式');
+            return;
+          }
+
+          // 5. 產生檔案並下載
+          const out = doc.getZip().generate({
+            type: 'blob',
+            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          });
+          
+          saveAs(out, `行程表-${this.orderId}.docx`);
+        },
+        error: (err) => {
+          console.error('找不到 template.docx', err);
+          alert('找不到範本檔案，請確認 public/template.docx 是否存在');
+        }
+      });
+  }
+
+  // =========================================================
+  // 🏭 功能二：資料加工廠 (把 Supabase 資料轉成 Word 巢狀結構)
+  // =========================================================
+  private processTasksForWord(tasks: any[]): any[] {
+    if (!tasks || tasks.length === 0) return [];
+
+    // A. 先排序
+    tasks.sort((a, b) => {
+      // ❌ 原本錯的: if (a.day !== b.day) return a.day - b.day;
+      // ✅ 修正後: 改用 day_number
+      if (a.day_number !== b.day_number) return a.day_number - b.day_number;
+      
+      // ❌ 原本錯的: return (a.time || '').localeCompare(b.time || '');
+      // ✅ 修正後: 改用 start_time
+      return (a.start_time || '').localeCompare(b.start_time || '');
+    });
+
+    // B. 分組
+    const daysMap = new Map<number, any[]>();
+    tasks.forEach(task => {
+      // ✅ 修正後: 改用 day_number
+      const day = task.day_number || 1; 
+      if (!daysMap.has(day)) daysMap.set(day, []);
+      daysMap.get(day)?.push(task);
+    });
+
+    // C. 轉換
+    const sortedDays = Array.from(daysMap.keys()).sort((a, b) => a - b);
+
+    return sortedDays.map(dayNum => {
+      const dayTasksRaw = daysMap.get(dayNum) || [];
+
+      // D. 處理每一筆行程
+      const processedDayTasks = dayTasksRaw.map((t, index) => {
+        const isLast = index === dayTasksRaw.length - 1;
+        
+        return {
+          // ✅ 修正後: 改用 start_time，並對應 Word 裡的 {time}
+          time: t.start_time ? t.start_time.slice(0, 5) : '', 
+          
+          // ✅ 修正後: 改用 item_name，並對應 Word 裡的 {title}
+          title: t.item_name, 
+          
+          separator: isLast ? '' : ' - ' 
+        };
+      });
+
+      return {
+        dayNum: dayNum,          
+        dayTasks: processedDayTasks 
+      };
+    });
   }
 }

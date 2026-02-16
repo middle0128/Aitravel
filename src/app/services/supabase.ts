@@ -131,7 +131,16 @@ getOrders(pageIndex: number, pageSize: number, statusFilter: string = 'All', sea
     if (error) throw error;
     return data;
   }
-
+  // 放在 SupabaseService class 裡面
+async getOrderById(id: string) {
+  // 注意：這裡是用 this.supabase 還是 this.client 要看你 service 內部的命名
+  // 假設你內部是用 supabase
+  return await this.supabase
+    .from('orders')
+    .select('client_name, start_date, end_date')
+    .eq('id', id)
+    .single();
+}
   // 🆕 新增：檢查訂單編號是否已存在
   async checkOrderIdExists(id: string): Promise<boolean> {
     const { data, error } = await this.supabase
