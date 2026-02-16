@@ -171,7 +171,11 @@
       </button>
     </div>
   </div>
-
+  @if(wordbuttomisloading){
+    <div class="loading-overlay">
+  <div class="glitch" data-glitch="Loading...">Loading...</div>
+</div>
+  }
   @if (isLoading) {
     <div class="text-center py-20 text-slate-500">正在讀取任務資料...</div>
   } @else {

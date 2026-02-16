@@ -471,8 +471,13 @@ export class TasksComponent implements OnInit {
     return this.changedTaskIds.size > 0;
   }
 
+  wordbuttomisloading: boolean = false;
+
   public exportToWord() {
+    if (this.wordbuttomisloading) return;
+    this.wordbuttomisloading = true;
     // 1. 讀取 public/template.docx (注意：Angular 17+ 不用寫 assets/)
+    setTimeout(() => {
     this.http.get('template.docx', { responseType: 'arraybuffer' })
       .subscribe({
         next: (content: ArrayBuffer) => {
@@ -497,12 +502,14 @@ export class TasksComponent implements OnInit {
           // 4. 渲染資料 (Render)
           try {
             doc.render(templateData);
+
           } catch (error) {
             console.error('匯出失敗:', error);
-            alert('匯出失敗，請檢查資料格式');
+            this.alertService.error('匯出失敗，請檢查資料格式');
+              this.wordbuttomisloading = false;
             return;
           }
-
+          this.alertService.success('匯出成功！');
           // 5. 產生檔案並下載
           const out = doc.getZip().generate({
             type: 'blob',
@@ -510,12 +517,15 @@ export class TasksComponent implements OnInit {
           });
           
           saveAs(out, `行程表-${this.orderId}.docx`);
+          this.wordbuttomisloading = false;
         },
         error: (err) => {
           console.error('找不到 template.docx', err);
-          alert('找不到範本檔案，請確認 public/template.docx 是否存在');
+          this.alertService.error('找不到範本檔案，請確認 public/template.docx 是否存在');
+          this.wordbuttomisloading = false;
         }
       });
+      }, 1000);
   }
 
   // =========================================================
