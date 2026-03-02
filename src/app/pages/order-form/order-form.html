@@ -58,19 +58,69 @@
       </div>
 
       <div>
-        <label class="block text-sm font-bold text-slate-700 mb-2">
-          表單創建人 <span class="text-xs text-slate-400 font-normal">(系統自動帶入)</span>
-        </label>
-        <input 
-          type="text" 
-          [(ngModel)]="model.main_contact" 
-          name="mainContact"
-          readonly
-          class="w-full px-4 py-2 border border-slate-200 bg-slate-100 text-slate-500 rounded-lg cursor-not-allowed select-none">
+        <label class="block text-sm font-bold text-slate-700 mb-2">航班資訊</label>
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">去程航班</label>
+            <input 
+              type="text" 
+              [(ngModel)]="flightData.outboundNum" 
+              name="outboundNum" 
+              placeholder="例: BR212" 
+              class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none transition text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">去程時間</label>
+            <input 
+              type="time" 
+              [(ngModel)]="flightData.outboundTime" 
+              name="outboundTime" 
+              class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none transition text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">回程航班</label>
+            <input 
+              type="text" 
+              [(ngModel)]="flightData.returnNum" 
+              name="returnNum" 
+              placeholder="例: BR211" 
+              class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none transition text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">回程時間</label>
+            <input 
+              type="time" 
+              [(ngModel)]="flightData.returnTime" 
+              name="returnTime" 
+              class="w-full px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none transition text-sm">
+          </div>
+          
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-6">
         <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">大人 (人數)</label>
+          <input 
+            type="number" min="0" 
+            [(ngModel)]="model.adults" 
+            name="adults"
+            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">小孩 (人數)</label>
+          <input 
+            type="number" min="0" 
+            [(ngModel)]="model.children" 
+            name="children"
+            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-12 gap-4 items-end">
+        <div class="col-span-5">
           <label class="block text-sm font-bold text-slate-700 mb-2">出發日期 <span class="text-red-500">*</span></label>
           <input 
             type="date" 
@@ -79,7 +129,7 @@
             class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
             required>
         </div>
-        <div>
+        <div class="col-span-5">
           <label class="block text-sm font-bold text-slate-700 mb-2">結束日期 <span class="text-red-500">*</span></label>
           <input 
             type="date" 
@@ -88,6 +138,26 @@
             class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
             required>
         </div>
+        
+        <div class="col-span-2">
+          @if (totalDays > 0) {
+            <div class="w-full py-2 px-2 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-200 text-center flex items-center justify-center h-[42px]">
+              共 {{ totalDays }} 天
+            </div>
+          }
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-2 mt-4">
+          表單創建人 <span class="text-xs text-slate-400 font-normal">(系統自動帶入)</span>
+        </label>
+        <input 
+          type="text" 
+          [(ngModel)]="model.main_contact" 
+          name="mainContact"
+          readonly
+          class="w-full px-4 py-2 border border-slate-200 bg-slate-100 text-slate-500 rounded-lg cursor-not-allowed select-none">
       </div>
 
       @if (errorMessage) {

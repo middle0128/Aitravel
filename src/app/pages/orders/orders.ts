@@ -104,8 +104,23 @@ export class OrdersComponent implements OnInit {
           console.error('載入訂單失敗:', response.error);
           this.alertService.error('載入訂單失敗:' + response.error);
         } else {
-          this.orders = response.data || [];
-          // Supabase 會回傳 count 屬性 (因為我們在 service 寫了 { count: 'exact' })
+          this.orders = (response.data || []).map((order:any)=> {
+            let parsedFlight = null;
+            if (order.flight_info) {
+              try {
+                // 將字串轉換回 JSON 物件
+                parsedFlight = JSON.parse(order.flight_info);
+              } catch (e) {
+                console.error('解析航班資料失敗', e);
+              }
+            }
+            
+            // 把解開的航班資料，還有算好的天數，一起塞進這個 order 物件裡
+            return {
+              ...order,
+              flightObj: parsedFlight // 這樣 HTML 就可以用 order.flightObj.outboundNum 了！
+            };
+          });
           this.totalCount = response.count || 0; 
         }
         this.isLoading = false;

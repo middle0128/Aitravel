@@ -14,7 +14,9 @@ export interface Order {
   updated_at?: string;
   is_priority?: boolean;
   has_issue?: boolean;
-
+  flight_info?: string;
+  adults?: number;
+  children?: number;
 }
 
 export interface Task {

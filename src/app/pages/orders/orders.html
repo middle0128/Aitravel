@@ -105,6 +105,33 @@
                 }
 
               </div>
+              @if (order.flightObj || order.adults > 0 || order.children > 0) {
+            <div class="mt-3 p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-600">
+              @if (order.flightObj) {
+                <div class="flex justify-between items-center mb-1.5 pb-1.5 border-b border-slate-200/60">
+                  <div class="flex items-center gap-1">
+                    <span>🛫 去程:</span>
+                    <span class="font-bold text-slate-700">{{ order.flightObj.outboundNum || '未填' }}</span>
+                    <span class="text-blue-600">{{ order.flightObj.outboundTime }}</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <span>🛬 回程:</span>
+                    <span class="font-bold text-slate-700">{{ order.flightObj.returnNum || '未填' }}</span>
+                    <span class="text-blue-600">{{ order.flightObj.returnTime }}</span>
+                  </div>
+                </div>
+              }
+              <div class="flex items-center justify-between font-medium">
+                <div class="flex gap-3 text-slate-500">
+                  <span>👨 大人: {{ order.adults || 0 }} 位</span>
+                  <span>🧒 小孩: {{ order.children || 0 }} 位</span>
+                </div>
+                <div class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded">
+                  總計: {{ (order.adults || 0) + (order.children || 0) }} 位
+                </div>
+              </div>
+            </div>
+          }
                 <div class="flex items-center justify-between mt-3 mt-auto">
     
                     <div class="flex items-center text-sm text-slate-500">

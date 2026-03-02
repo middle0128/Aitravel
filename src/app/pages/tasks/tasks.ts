@@ -581,4 +581,29 @@ export class TasksComponent implements OnInit {
       };
     });
   }
+
+  getTaskDate(dayNumber: number): Date | null {
+    if (!this.orderInfo || !this.orderInfo.start_date) return null;
+    const baseDate = new Date(this.orderInfo.start_date);
+    if (isNaN(baseDate.getTime())) return null;
+    baseDate.setDate(baseDate.getDate() + (dayNumber - 1));
+    return baseDate;
+  }
+
+  // 🌟 再新增這個：直接幫你組裝好「MM/dd (中文星期)」的字串
+  getChineseTaskDate(dayNumber: number): string {
+    const date = this.getTaskDate(dayNumber);
+    if (!date) return '';
+
+    // 抓出月份跟日期，並且補零 (例如 4 會變成 04)
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    // 定義中文星期陣列 (Date.getDay() 回傳 0 是星期日)
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+    const weekDayStr = weekDays[date.getDay()];
+
+    // 組裝起來回傳！
+    return `${month}/${day} (${weekDayStr})`;
+  }
 }
